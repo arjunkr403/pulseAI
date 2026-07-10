@@ -9,13 +9,15 @@ def main():
 
     result = app.invoke({"messages": [], "approved": False}, config=config)
 
-    suggested_fix = result["__interrupt__"][0].value
+    if "__interrupt__" in result:
+        
+        suggested_fix = result["__interrupt__"][0].value
+        
+        print(f"\nSuggested Fix: {suggested_fix}")
+        
+        user_input = input("Do you approve this fix?  (yes/no): ")
 
-    print(f"\nSuggested Fix: {suggested_fix}")
-
-    user_input = input("Do you approve this fix?  (yes/no): ")
-
-    result = app.invoke(Command(resume=user_input), config=config)
+        result = app.invoke(Command(resume=user_input), config=config)
 
     print("\nFinal State:")
     print(f"Metrics: {result["metrics"]}")
