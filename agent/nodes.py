@@ -38,6 +38,7 @@ def get_metrics(state: AgentState):  # Reads: None  Writes: metrics
 
 
 def detect_anomaly(state: AgentState):  # Reads: metrics  Writes: anomaly_detected
+    
     metrics = state["metrics"]
     anomaly = (
         metrics["cpu_usage"] > 1
@@ -92,3 +93,4 @@ def execute_fix(state: AgentState):
 def no_action(state: AgentState):
     print("No anomaly detected. System healthy.")
     return {}
+
