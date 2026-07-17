@@ -17,20 +17,24 @@ PROMETHEUS_URL = "http://localhost:9090"
 def get_metrics(state: AgentState):  # Reads: None  Writes: metrics
     def query(q):
         try:
-            r = requests.get(f"{PROMETHEUS_URL}/api/v1/query", params={"query": q}) #http get request to prometheus
+            r = requests.get(
+                f"{PROMETHEUS_URL}/api/v1/query", params={"query": q}
+            )  # http get request to prometheus
 
             result = r.json()["data"]["result"]
-            return round(float(result[0]["value"][1]),3) if result else 0.0
+            return round(float(result[0]["value"][1]), 3) if result else 0.0
 
         except:
             return 0.0
 
     metrics = {
-        "cpu_usage": query("rate(process_cpu_seconds_total[1m]) * 100"), #rate of CPU time over last min and scale it to a percentage-like value
+        "cpu_usage": query(
+            "rate(process_cpu_seconds_total[1m]) * 100"
+        ),  # rate of CPU time over last min and scale it to a percentage-like value
         "rps": query("sum(rate(gateway_requests_total[1m]))"),
         "latency_p95": query(
             "histogram_quantile(0.95, sum(rate(gateway_request_latency_seconds_bucket[1m])) by (le)) * 1000"
-        ), # 95th percentile req latency from histogram and convert result from seconds to milliseconds
+        ),  # 95th percentile req latency from histogram and convert result from seconds to milliseconds
         "pod_status": "Running",
     }
 
@@ -38,12 +42,12 @@ def get_metrics(state: AgentState):  # Reads: None  Writes: metrics
 
 
 def detect_anomaly(state: AgentState):  # Reads: metrics  Writes: anomaly_detected
-    
+
     metrics = state["metrics"]
     anomaly = (
-        metrics["cpu_usage"] > 1
+        metrics["cpu_usage"] > 20
         or metrics["pod_status"] != "Running"
-        or metrics["latency_p95"] > 0.01
+        or metrics["latency_p95"] > 40
     )
     return {"anomaly_detected": anomaly}
 
@@ -93,4 +97,3 @@ def execute_fix(state: AgentState):
 def no_action(state: AgentState):
     print("No anomaly detected. System healthy.")
     return {}
-

@@ -4,14 +4,17 @@ from langgraph.types import Command
 from agent.graph import build_graph
 from api.models import ChatRequest, ApprovalRequest
 from db.database import get_db, Incident
+import uuid
 
 router = APIRouter()
 app_graph = build_graph()
 
 
 @router.post("/chat")
-def chat(request: ChatRequest, db: Session = Depends(get_db)):
-    config = {"configurable": {"thread_id": request.thread_id}}
+def chat(db: Session = Depends(get_db)):
+    thread_id = str(uuid.uuid4())
+
+    config = {"configurable": {"thread_id": thread_id}}
 
     result = app_graph.invoke({"messages": [], "approved": False}, config=config)
     metrics = result.get("metrics", {})
@@ -19,9 +22,9 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
     suggested_fix = result.get("suggested_fix", "")
     requires_approval = "__interrupt__" in result
 
-    if anomaly:  # if anomaly create ORM obj
+    if anomaly:  # if anomaly create ORM object
         incident = Incident(
-            thread_id=request.thread_id,
+            thread_id=thread_id,
             cpu_usage=metrics.get("cpu_usage", 0),
             rps=metrics.get("rps", 0),
             latency_p95=metrics.get("latency_p95", 0),
@@ -41,7 +44,7 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
         "metrics": metrics,
         "anomaly_detected": anomaly,
         "requires_approval": requires_approval,
-        "thread_id": request.thread_id,
+        "thread_id": thread_id,
     }
 
 
@@ -55,10 +58,10 @@ def approve(request: ApprovalRequest, db: Session = Depends(get_db)):
     )
 
     incident = (
-    db.query(Incident)                                 # SELECT * FROM incidents
-    .filter(Incident.thread_id == request.thread_id)   # WHERE thread_id ="abc"
-    .order_by(Incident.created_at.desc())              # ORDER BY created_at DESC
-    .first()                                           # LIMIT 1;
+        db.query(Incident)  # SELECT * FROM incidents
+        .filter(Incident.thread_id == request.thread_id)  # WHERE thread_id ="abc"
+        .order_by(Incident.created_at.desc())  # ORDER BY created_at DESC
+        .first()  # LIMIT 1;
     )
 
     if incident:

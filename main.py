@@ -1,11 +1,11 @@
 from agent.graph import build_graph
 from langgraph.types import Command
-
+import uuid
 
 def main():
     app = build_graph()
 
-    config = {"configurable": {"thread_id": 1}}
+    config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
     result = app.invoke({"messages": [], "approved": False}, config=config)
 
