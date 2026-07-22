@@ -9,3 +9,5 @@ class AgentState(TypedDict):
     anomaly_detected: bool
     suggested_fix: str
     approved: bool
+    fix_type: str           # which fix to execute: scale_up, restart_pod, restart_gateway
+    fix_result: str         # result message after execution

@@ -15,7 +15,8 @@ class MetricsResponse(BaseModel):  # Defines the response when returning system 
 
 
 class ChatRequest(BaseModel):  # Defines what the frontend sends to the chatbot.
-    message: str ="scan"
+    message: str = "scan"
+    thread_id: str | None = None
 
 
 class ChatResponse(BaseModel):  # Defines what your AI chatbot returns.
