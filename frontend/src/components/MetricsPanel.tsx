@@ -46,8 +46,10 @@ export default function MetricsPanel() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>("");
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
+    setRefreshing(true);
     try {
       const data = await fetchMetrics();
       setMetrics(data);
@@ -55,27 +57,19 @@ export default function MetricsPanel() {
       setLastUpdated(new Date().toLocaleTimeString());
     } catch {
       setError("Failed to fetch metrics — is the backend running?");
+    } finally {
+      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchMetrics();
-        setMetrics(data);
-        setError(null);
-        setLastUpdated(new Date().toLocaleTimeString());
-      } catch {
-        setError("Failed to fetch metrics — is the backend running?");
-      }
-    };
     load();
     const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full">
+    <div className="bg-white rounded-xl border border-gray-200 p-6">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-sm font-semibold text-gray-900">Live metrics</h2>
@@ -85,9 +79,26 @@ export default function MetricsPanel() {
         </div>
         <button
           onClick={load}
-          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+          title="Refresh metrics"
         >
-          Refresh
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={refreshing ? "animate-spin" : ""}
+          >
+            <path d="M21 2v6h-6" />
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+            <path d="M3 22v-6h6" />
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+          </svg>
         </button>
       </div>
 

@@ -36,6 +36,8 @@ class Incident(
     latency_p95 = Column(Float)                    # latency_p95 FLOAT,
     pod_status = Column(String)                    # pod_status VARCHAR,
     suggested_fix = Column(String)                 # suggested_fix VARCHAR,
+    fix_type = Column(String, default="")          # fix_type VARCHAR,
+    fix_result = Column(String, default="")        # fix_result VARCHAR,
     approved = Column(Boolean, default=False)      # approved BOOLEAN,
     executed = Column(Boolean, default=False)      # executed BOOLEAN,
     created_at = Column(                           # created_at TIMESTAMP
